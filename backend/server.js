@@ -5,7 +5,9 @@ const session = require('express-session');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 require('dotenv').config();
-require('./config/passportConfig'); // Ensure Passport strategies are loaded
+require('./config/passportConfig');
+const developerRoutes = require("./routes/developerRoutes");
+
 
 const app = express();
 
@@ -52,6 +54,8 @@ app.use((req, res, next) => {
 app.use('/api/users', authRoutes); // Mount your authRoutes
 // Routes
 app.use('/auth', authRoutes); // Mount /auth routes (Google, LinkedIn, GitHub OAuth)
+app.use("/api/developers", developerRoutes);
+
 
 
 
