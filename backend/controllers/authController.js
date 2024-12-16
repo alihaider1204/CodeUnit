@@ -43,15 +43,28 @@ const signup = async (req, res) => {
       role: "student", // Default role
     });
 
+    // Save the user to the database
     await newUser.save();
     console.log(`✅ User Registered: ${email}`);
 
-    res.status(201).json({ message: "Signup successful! Welcome to Code Unity." });
+    // Generate token for the user
+    const token = generateToken(newUser);
+
+    // Save the token in the user document
+    newUser.token = token;
+    await newUser.save();
+
+    // Respond with the token
+    res.status(201).json({
+      message: "Signup successful! Welcome to Code Unity.",
+      token, // Send the token to the client
+    });
   } catch (error) {
     console.error("❌ Error during signup:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // Login Controller
 const login = async (req, res) => {

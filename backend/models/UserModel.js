@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     enum: ["student", "developer", "admin"],
     default: "student",
   },
+  token: {
+    type: String,
+    required: true,
+  },
   googleId: { type: String, unique: true, sparse: true },
   linkedInId: { type: String, unique: true, sparse: true },
   githubId: { type: String, unique: true, sparse: true },
