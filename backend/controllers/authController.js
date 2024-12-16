@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../models/userModel"); // Adjust the path to your User model
+const User = require("../models/userModel");
+const { generateOtp } = require('../utils/generateOtp');
+const { sendEmail } = require('../utils/sendEmail');
 
 // Utility function to generate JWT
 const generateToken = (user) => {
@@ -10,6 +12,18 @@ const generateToken = (user) => {
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
 };
+
+
+
+const sendOtp = async (user) => {
+  const otp = generateOtp();
+  user.otp = otp;
+  user.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiry
+  await user.save();
+
+  await sendEmail(user.email, 'Your OTP Code', `Your OTP is ${otp}`);
+};
+
 
 // Signup Controller
 const signup = async (req, res) => {
@@ -138,6 +152,39 @@ const logout = (req, res) => {
   res.json({ message: "Logged out successfully. Discard the token on the client." });
 };
 
+
+
+const twoFAlogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user || user.password !== password) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+
+  await sendOtp(user);
+
+  res.status(200).json({ message: 'OTP sent to your email', userId: user._id });
+};
+
+const verifyOtp = async (req, res) => {
+  const { userId, otp } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  if (user.otp !== otp || user.otpExpiry < Date.now()) {
+    return res.status(400).json({ message: 'Invalid or expired OTP' });
+  }
+
+  user.otp = null;
+  user.otpExpiry = null;
+  await user.save();
+
+  res.status(200).json({ message: 'OTP verified successfully' });
+};
+
+
 module.exports = {
   signup,
   login,
@@ -145,4 +192,6 @@ module.exports = {
   linkedInOAuthCallback,
   githubOAuthCallback,
   logout,
+  twoFAlogin,
+  verifyOtp,
 };

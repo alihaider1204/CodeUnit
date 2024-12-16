@@ -1,5 +1,8 @@
 const express = require("express");
 const passport = require("passport");
+const express = require('express');
+const { twoFAlogin, verifyOtp } = require('../controllers/authController');
+
 
 const router = express.Router();
 
@@ -49,5 +52,11 @@ router.get("/linkedin/callback", passport.authenticate("linkedin", { session: fa
 // GitHub OAuth Routes
 router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
 router.get("/github/callback", passport.authenticate("github", { session: false }), handleOAuthCallback);
+
+
+
+router.post('/two-fa-login', twoFAlogin);
+router.post('/verify-otp', verifyOtp);
+
 
 module.exports = router;

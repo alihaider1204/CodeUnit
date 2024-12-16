@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+
+  otp: { type: String },
+  otpExpiry: { type: Date },
+  
   googleId: { type: String, unique: true, sparse: true },
   linkedInId: { type: String, unique: true, sparse: true },
   githubId: { type: String, unique: true, sparse: true },
